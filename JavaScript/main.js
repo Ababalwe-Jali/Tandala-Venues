@@ -52,33 +52,78 @@
   function initMobileNav() {
     var toggle = document.getElementById("navToggle");
     var panel = document.getElementById("mobileNav");
+    var menu = panel ? panel.querySelector(".mobile-nav-panel") : null;
     if (!toggle || !panel) return;
+    var focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    var lastFocused = null;
 
-    function close() {
+    function getFocusableItems() {
+      return Array.prototype.slice.call(panel.querySelectorAll(focusableSelector)).filter(function (item) {
+        return item.offsetParent !== null;
+      });
+    }
+
+    function close(restoreFocus) {
       toggle.classList.remove("is-open");
       panel.classList.remove("is-open");
       toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Open menu");
+      panel.setAttribute("aria-hidden", "true");
       document.body.classList.remove("nav-locked");
+      if (restoreFocus && lastFocused && typeof lastFocused.focus === "function") {
+        lastFocused.focus();
+      }
     }
     function open() {
+      lastFocused = document.activeElement;
       toggle.classList.add("is-open");
       panel.classList.add("is-open");
       toggle.setAttribute("aria-expanded", "true");
+      toggle.setAttribute("aria-label", "Close menu");
+      panel.setAttribute("aria-hidden", "false");
       document.body.classList.add("nav-locked");
+      window.setTimeout(function () {
+        var firstItem = getFocusableItems()[0];
+        if (firstItem) firstItem.focus();
+      }, prefersReducedMotion ? 0 : 120);
     }
 
     toggle.addEventListener("click", function () {
       var isOpen = panel.classList.contains("is-open");
-      isOpen ? close() : open();
+      isOpen ? close(false) : open();
     });
 
     panel.querySelectorAll("a").forEach(function (link) {
-      link.addEventListener("click", close);
+      link.addEventListener("click", function () { close(false); });
+    });
+
+    panel.addEventListener("click", function (e) {
+      if (e.target === panel) close(false);
     });
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") close();
+      if (!panel.classList.contains("is-open")) return;
+      if (e.key === "Escape") {
+        close(true);
+        return;
+      }
+      if (e.key !== "Tab" || !menu) return;
+      var items = getFocusableItems();
+      if (!items.length) return;
+      var first = items[0];
+      var last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     });
+
+    window.addEventListener("resize", throttle(function () {
+      if (window.innerWidth > 1024 && panel.classList.contains("is-open")) close(false);
+    }, 120));
   }
 
   /* ---------- Active nav link highlighting ---------- */
