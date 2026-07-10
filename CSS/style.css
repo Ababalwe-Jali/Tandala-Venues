@@ -151,8 +151,8 @@ h1, h2, h3, h4, .font-display{
   line-height: 1.15;
   letter-spacing: 0.2px;
 }
-h1{ font-size: 48px; font-weight: 600; }
-h2{ font-size: 36px; }
+h1{ font-size: 34px; font-weight: 600; }
+h2{ font-size: 30px; }
 h3{ font-size: clamp(1.35rem, 2vw, 1.75rem); }
 h4{ font-size: 1.15rem; font-weight: 600; }
 
@@ -236,8 +236,8 @@ p.lead{ font-size: 15px; line-height: 1.75; }
 }
 
 .section-badge__icon {
-    width: 80px;
-    height: 81px;
+    width: 60px;
+    height: 61px;
     object-fit: contain;
     flex-shrink: 0;
     user-select: none;
